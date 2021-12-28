@@ -28,13 +28,13 @@ describe("TokenSaleTest", function () {
       pGIVE.address,
       dai.address,
       1,
-      addr1.address
+      addr1.address,
+      1000
     );
-    
-
+  
   });
 
-  it("Should", async function () {
+  it("Should be able to buy tokens", async function () {
     
   });
 });

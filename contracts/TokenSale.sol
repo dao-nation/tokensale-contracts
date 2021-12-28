@@ -19,16 +19,18 @@ contract TokenSale is Ownable {
   address private _saleProceedsAddress;
   uint256 public pGIVEPrice;
   bool public initialized;
+  uint256 buyerCapLimit;
 
   mapping( address => bool ) public approvedBuyers;
-
+  mapping( address => uint256 ) public buyerCap;
   constructor() {}
     
   function initialize( 
     address pGIVE_, 
     address dai_,
     uint256 pGIVEPrice_,
-    address saleProceedsAddress_
+    address saleProceedsAddress_,
+    uint256 buyerCapLimit_
   ) external onlyOwner {
     require( !initialized );
 
@@ -38,12 +40,22 @@ contract TokenSale is Ownable {
     pGIVEPrice = pGIVEPrice_;
     _saleProceedsAddress = saleProceedsAddress_;
     initialized = true;
+    buyerCapLimit = buyerCapLimit_;
   }
 
   function disable() external onlyOwner {
     initialized = false;
   }
+
+  
+  function setBuyerCapLimit(uint256 newBuyerCapLimit_) external onlyOwner {
+    buyerCapLimit = newBuyerCapLimit_;
+  }
     
+  function resetBuyerCap(address buyer_) external onlyOwner{
+      buyerCap[buyer_] = 0;
+  }
+
   function setPGIVEPrice( uint256 newPGIVEPrice_ ) external onlyOwner() returns ( uint256 ) {
     pGIVEPrice = newPGIVEPrice_;
     return pGIVEPrice;
@@ -71,9 +83,15 @@ contract TokenSale is Ownable {
 
   function buyPGIVE( uint256 amountPaid_ ) external returns ( bool ) {
     require( approvedBuyers[msg.sender], "Buyer not approved." );
+    
     uint256 pGIVEAmountPurchased_ = _calculateAmountPurchased( amountPaid_ );
+    
+    uint256 newCap = buyerCap[msg.sender].add(pGIVEAmountPurchased_);  
+    require( buyerCapLimit == 0 ||  newCap <= buyerCapLimit);
+
     dai.safeTransferFrom( msg.sender, _saleProceedsAddress, amountPaid_ );
     pGIVE.safeTransfer( msg.sender, pGIVEAmountPurchased_ );
+    buyerCap[msg.sender] = newCap;
     return true;
   }
 
