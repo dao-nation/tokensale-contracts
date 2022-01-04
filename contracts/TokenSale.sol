@@ -14,10 +14,10 @@ contract TokenSale is Ownable {
   event SellerApproval( address indexed approver, address indexed seller, string indexed message );
 
   IERC20 public dai;
-  IERC20 public pGIVE;
+  IERC20 public pESG;
 
   address private _saleProceedsAddress;
-  uint256 public pGIVEPrice;
+  uint256 public pESGPrice;
   bool public initialized;
   uint256 buyerCapLimit;
 
@@ -26,18 +26,18 @@ contract TokenSale is Ownable {
   constructor() {}
     
   function initialize( 
-    address pGIVE_, 
+    address pESG_, 
     address dai_,
-    uint256 pGIVEPrice_,
+    uint256 pESGPrice_,
     address saleProceedsAddress_,
     uint256 buyerCapLimit_
   ) external onlyOwner {
     require( !initialized );
 
-    pGIVE = IERC20( pGIVE_ );
+    pESG = IERC20( pESG_ );
     dai = IERC20( dai_ );
 
-    pGIVEPrice = pGIVEPrice_;
+    pESGPrice = pESGPrice_;
     _saleProceedsAddress = saleProceedsAddress_;
     initialized = true;
     buyerCapLimit = buyerCapLimit_;
@@ -56,9 +56,9 @@ contract TokenSale is Ownable {
       buyerCap[buyer_] = 0;
   }
 
-  function setPGIVEPrice( uint256 newPGIVEPrice_ ) external onlyOwner() returns ( uint256 ) {
-    pGIVEPrice = newPGIVEPrice_;
-    return pGIVEPrice;
+  function setPESGPrice( uint256 newPESGPrice_ ) external onlyOwner() returns ( uint256 ) {
+    pESGPrice = newPESGPrice_;
+    return pESGPrice;
   }
 
   function _approveBuyer( address newBuyer_ ) internal onlyOwner() returns ( bool ) {
@@ -78,19 +78,19 @@ contract TokenSale is Ownable {
   }
 
   function _calculateAmountPurchased( uint256 amountPaid_ ) internal returns ( uint256 ) {
-    return amountPaid_.mul( pGIVEPrice );
+    return amountPaid_.mul( pESGPrice );
   }
 
-  function buyPGIVE( uint256 amountPaid_ ) external returns ( bool ) {
+  function buyPESG( uint256 amountPaid_ ) external returns ( bool ) {
     require( approvedBuyers[msg.sender], "Buyer not approved." );
     
-    uint256 pGIVEAmountPurchased_ = _calculateAmountPurchased( amountPaid_ );
+    uint256 pESGAmountPurchased_ = _calculateAmountPurchased( amountPaid_ );
     
-    uint256 newCap = buyerCap[msg.sender].add(pGIVEAmountPurchased_);  
+    uint256 newCap = buyerCap[msg.sender].add(pESGAmountPurchased_);  
     require( buyerCapLimit == 0 ||  newCap <= buyerCapLimit);
 
     dai.safeTransferFrom( msg.sender, _saleProceedsAddress, amountPaid_ );
-    pGIVE.safeTransfer( msg.sender, pGIVEAmountPurchased_ );
+    pESG.safeTransfer( msg.sender, pESGAmountPurchased_ );
     buyerCap[msg.sender] = newCap;
     return true;
   }
