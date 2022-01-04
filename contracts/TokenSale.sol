@@ -87,7 +87,7 @@ contract TokenSale is Ownable {
     uint256 pESGAmountPurchased_ = _calculateAmountPurchased( amountPaid_ );
     
     uint256 newCap = buyerCap[msg.sender].add(pESGAmountPurchased_);  
-    require( buyerCapLimit == 0 ||  newCap <= buyerCapLimit);
+    require( buyerCapLimit == 0 || newCap <= buyerCapLimit, "Amount exceeds buyer cap limit");
 
     dai.safeTransferFrom( msg.sender, _saleProceedsAddress, amountPaid_ );
     pESG.safeTransfer( msg.sender, pESGAmountPurchased_ );
